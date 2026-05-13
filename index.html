@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Swiss IT Skill Radar</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            min-height: 100vh;
+        }
+        header {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border-bottom: 1px solid #334155;
+            padding: 1.5rem 2rem;
+        }
+        header h1 {
+            font-size: 1.8rem;
+            background: linear-gradient(135deg, #38bdf8, #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        header p { color: #94a3b8; margin-top: 0.25rem; }
+        .filters {
+            display: flex;
+            gap: 0.75rem;
+            padding: 1rem 2rem;
+            background: #1e293b;
+            border-bottom: 1px solid #334155;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .filters label { color: #94a3b8; font-size: 0.85rem; font-weight: 600; }
+        .filters select {
+            background: #0f172a;
+            color: #e2e8f0;
+            border: 1px solid #334155;
+            border-radius: 6px;
+            padding: 0.4rem 0.6rem;
+            font-size: 0.85rem;
+        }
+        .kpi-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            padding: 1.5rem 2rem;
+        }
+        .kpi {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 10px;
+            padding: 1.25rem;
+        }
+        .kpi .label { color: #94a3b8; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; }
+        .kpi .value { font-size: 2rem; font-weight: 700; color: #38bdf8; margin-top: 0.25rem; }
+        .layout {
+            display: grid;
+            grid-template-columns: 340px 1fr;
+            gap: 1rem;
+            padding: 0 2rem 2rem;
+        }
+        @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } }
+        .sidebar { display: flex; flex-direction: column; gap: 1rem; }
+        .card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 10px;
+            padding: 1.25rem;
+        }
+        .card h2 {
+            font-size: 1rem;
+            color: #94a3b8;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .skill-list { list-style: none; max-height: 400px; overflow-y: auto; }
+        .skill-list::-webkit-scrollbar { width: 6px; }
+        .skill-list::-webkit-scrollbar-track { background: #0f172a; }
+        .skill-list::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+        .skill-list::-webkit-scrollbar-thumb:hover { background: #64748b; }
+        .skill-list li {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.45rem 0.75rem;
+            border-bottom: 1px solid #1e293b;
+            cursor: pointer;
+            overflow: hidden;
+            transition: background 0.15s;
+        }
+        .skill-list li:hover { background: rgba(56,189,248,0.08); }
+        .skill-list li.included { background: rgba(56,189,248,0.12); }
+        .skill-list li.excluded { background: rgba(220,38,38,0.25); border-left: 3px solid #ef4444; }
+        .skill-list li .bar {
+            position: absolute;
+            right: 0; top: 0; bottom: 0;
+            background: rgba(56,189,248,0.12);
+            border-radius: 4px 0 0 4px;
+            transition: width 0.4s ease;
+            pointer-events: none;
+        }
+        .skill-list li.included .bar { background: rgba(56,189,248,0.25); }
+        .skill-list li.excluded .bar { background: rgba(239,68,68,0.12); }
+        .skill-list li .name { position: relative; z-index: 1; color: #cbd5e1; font-size: 0.85rem; }
+        .skill-list li.included .name { color: #38bdf8; font-weight: 600; }
+        .skill-list li.excluded .name { color: #f87171; font-weight: 600; text-decoration: line-through; }
+        .skill-list li .count {
+            position: relative; z-index: 1;
+            color: #38bdf8; font-size: 0.85rem; font-weight: 600;
+            min-width: 35px; text-align: right;
+        }
+        .skill-list li.excluded .count { color: #f87171; }
+        .skill-list li .actions {
+            display: none;
+            position: relative; z-index: 2;
+            align-items: center; gap: 2px;
+            margin-left: 0.3rem; flex-shrink: 0;
+        }
+        .skill-list li.included .actions,
+        .skill-list li.excluded .actions { display: flex; }
+        .skill-list li .actions button {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 20px; height: 20px;
+            border: none; border-radius: 4px;
+            background: transparent; color: #94a3b8;
+            cursor: pointer; padding: 0;
+            transition: background 0.15s, color 0.15s;
+        }
+        .skill-list li .actions button:hover { background: #334155; }
+        .skill-list li .actions .btn-exclude:hover { color: #f87171; }
+        .skill-list li .actions .btn-include:hover { color: #4ade80; }
+        .skill-list li .actions .btn-remove:hover { color: #f87171; }
+        .skill-list li.excluded .actions .btn-exclude { color: #f87171; }
+        .skill-list li .actions svg { width: 14px; height: 14px; }
+        .job-list { list-style: none; }
+        .job-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 1rem;
+            border-bottom: 1px solid #1e293b;
+            transition: background 0.15s;
+        }
+        .job-list li:hover { background: rgba(56,189,248,0.04); }
+        .job-info { flex: 1; min-width: 0; }
+        .job-title { font-size: 0.95rem; font-weight: 600; color: #e2e8f0; }
+        .job-title a { color: #38bdf8; text-decoration: none; }
+        .job-title a:hover { text-decoration: underline; }
+        .job-meta {
+            display: flex; flex-wrap: wrap; gap: 0.5rem;
+            margin-top: 0.3rem; font-size: 0.8rem; color: #94a3b8;
+        }
+        .job-meta span { display: inline-flex; align-items: center; gap: 0.2rem; }
+        .job-techs { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.4rem; }
+        .job-techs .tag {
+            background: #334155; color: #cbd5e1;
+            border-radius: 4px; padding: 0.15rem 0.4rem; font-size: 0.75rem;
+        }
+        .job-techs .tag.matched { background: rgba(56,189,248,0.2); color: #38bdf8; font-weight: 600; }
+        .job-salary {
+            flex-shrink: 0; text-align: right;
+            font-size: 0.85rem; color: #4ade80; font-weight: 600; white-space: nowrap;
+        }
+        .job-count { color: #64748b; font-size: 0.85rem; padding: 0.5rem 0; }
+        .loading { text-align: center; padding: 3rem; color: #94a3b8; font-size: 1.1rem; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Swiss IT Skill Radar</h1>
+        <p>Live analysis of tech job skills demand across Switzerland</p>
+    </header>
+    <div class="filters" id="filters"></div>
+    <div class="kpi-row" id="kpis"><div class="loading">Loading jobs from swissdevjobs.ch...</div></div>
+    <div class="layout">
+        <div class="sidebar">
+            <div class="card"><h2>Top Technologies</h2><ul class="skill-list" id="techList"></ul></div>
+            <div class="card"><h2>Benefits</h2><ul class="skill-list" id="perkList"></ul></div>
+        </div>
+        <div class="card"><h2>Jobs <span id="jobCount" class="job-count"></span></h2><ul class="job-list" id="jobList"></ul></div>
+    </div>
+<script>
+let allJobs = [];
+let currentFilters = {};
+let techFilters = new Map();
+let perkFilters = new Map();
+
+const PERK_LABELS = {
+    hybridwork:'Hybrid Work',parttime:'Part-time',flexiblework:'Flexible Hours',teamevents:'Team Events',
+    hardware:'Hardware Choice',remote2day:'Remote 2d/wk',wellconnected:'Well Connected',coffee:'Free Coffee',
+    intteam:'International Team',weeksvacation5:'5 Weeks Vacation',freshfruits:'Fresh Fruits',
+    cooloffice:'Cool Office',bonuspay:'Bonus Pay',sabbatical:'Sabbatical',maternity:'Maternity Leave',
+    tablefoot:'Foosball Table',coworkshops:'Workshops',sweets:'Sweets',buymorevacation:'Buy Extra Vacation',
+    standingdesk:'Standing Desk',wweek42:'42h Week',accinsurance:'Accident Insurance',retreat:'Retreat',
+    startupculture:'Startup Culture',wweek40:'40h Week',relocation:'Relocation Support',phonesub:'Phone Subsidy',
+    coparking:'Company Parking',beer:'Free Beer',individualbudget:'Individual Budget',remote3day:'Remote 3d/wk',
+    halffare:'Half-Fare Card',quietoffice:'Quiet Office',equity:'Equity',freelunch:'Free Lunch',
+    careerpath:'Career Path',weeksvacation6:'6 Weeks Vacation',discounts:'Discounts',petfriendly:'Pet Friendly',
+    gatravel:'GA Travel',gym:'Gym',accooler:'AC/Cooler',coaching:'Coaching',remote1day:'Remote 1d/wk',
+    remote4day:'Remote 4d/wk',companycar:'Company Car',privatehealth:'Private Health',
+    extraretirement:'Extra Retirement',rekachecks:'Reka Checks',pingpong:'Ping Pong',conferences:'Conferences',
+    publictransport:'Public Transport',relaxroom:'Relax Room',childcare:'Childcare',
+    mobilityallowance:'Mobility Allowance',remotefull:'Fully Remote',pizza:'Pizza',vacationbonus:'Vacation Bonus',
+    wageagree:'Wage Agreement'
+};
+
+const BAN_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="m4.9 4.9 14.2 14.2"></path></svg>';
+const PLUS_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>';
+const X_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>';
+
+function toggleTech(tech) {
+    if (techFilters.has(tech)) techFilters.delete(tech);
+    else techFilters.set(tech, 'include');
+    refresh();
+}
+function excludeTech(tech, e) {
+    e.stopPropagation();
+    techFilters.set(tech, techFilters.get(tech) === 'exclude' ? 'include' : 'exclude');
+    refresh();
+}
+function removeTech(tech, e) {
+    if (e) e.stopPropagation();
+    techFilters.delete(tech);
+    refresh();
+}
+function togglePerk(perk) {
+    if (perkFilters.has(perk)) perkFilters.delete(perk);
+    else perkFilters.set(perk, 'include');
+    refresh();
+}
+function excludePerk(perk, e) {
+    e.stopPropagation();
+    perkFilters.set(perk, perkFilters.get(perk) === 'exclude' ? 'include' : 'exclude');
+    refresh();
+}
+function removePerk(perk, e) {
+    if (e) e.stopPropagation();
+    perkFilters.delete(perk);
+    refresh();
+}
+
+function filterJobs() {
+    let jobs = allJobs;
+    const { city, exp, meta, workplace } = currentFilters;
+    if (city) jobs = jobs.filter(j => j.cityCategory === city);
+    if (exp) jobs = jobs.filter(j => j.expLevel === exp);
+    if (meta) jobs = jobs.filter(j => j.metaCategory === meta);
+    if (workplace) jobs = jobs.filter(j => j.workplace === workplace);
+
+    const incTechs = [...techFilters.entries()].filter(([,m]) => m==='include').map(([t]) => t);
+    const excTechs = [...techFilters.entries()].filter(([,m]) => m==='exclude').map(([t]) => t);
+    if (incTechs.length) {
+        const set = new Set(incTechs);
+        jobs = jobs.filter(j => { const t = new Set(j.technologies || []); for (const s of set) if (!t.has(s)) return false; return true; });
+    }
+    if (excTechs.length) {
+        const set = new Set(excTechs);
+        jobs = jobs.filter(j => { const t = new Set(j.technologies || []); for (const s of set) if (t.has(s)) return false; return true; });
+    }
+
+    const incPerks = [...perkFilters.entries()].filter(([,m]) => m==='include').map(([p]) => p);
+    const excPerks = [...perkFilters.entries()].filter(([,m]) => m==='exclude').map(([p]) => p);
+    if (incPerks.length) {
+        const set = new Set(incPerks);
+        jobs = jobs.filter(j => { const p = new Set(j.perkKeys || []); for (const s of set) if (!p.has(s)) return false; return true; });
+    }
+    if (excPerks.length) {
+        const set = new Set(excPerks);
+        jobs = jobs.filter(j => { const p = new Set(j.perkKeys || []); for (const s of set) if (p.has(s)) return false; return true; });
+    }
+
+    return jobs;
+}
+
+function computeStats(jobs) {
+    const techCount = {};
+    const perkCount = {};
+    let salarySum = 0, salaryN = 0;
+    for (const j of jobs) {
+        for (const t of (j.technologies || [])) techCount[t] = (techCount[t] || 0) + 1;
+        for (const p of (j.perkKeys || [])) perkCount[p] = (perkCount[p] || 0) + 1;
+        if (j.annualSalaryFrom && j.annualSalaryTo) {
+            salarySum += (j.annualSalaryFrom + j.annualSalaryTo) / 2;
+            salaryN++;
+        }
+    }
+    const techsSorted = Object.entries(techCount).sort((a,b) => b[1]-a[1]).slice(0, 50);
+    const perksSorted = Object.entries(perkCount).sort((a,b) => b[1]-a[1]).slice(0, 50);
+    return {
+        total: jobs.length,
+        uniqueTechs: Object.keys(techCount).length,
+        avgSalary: salaryN ? Math.round(salarySum / salaryN) : 0,
+        techs: techsSorted,
+        perks: perksSorted,
+    };
+}
+
+function refresh() {
+    const jobs = filterJobs();
+    const stats = computeStats(jobs);
+    renderKPIs(stats);
+    renderLists(stats);
+    renderJobs(jobs, stats.total);
+}
+
+function renderKPIs(s) {
+    document.getElementById('kpis').innerHTML = `
+        <div class="kpi"><div class="label">Total Jobs</div><div class="value">${s.total}</div></div>
+        <div class="kpi"><div class="label">Unique Skills</div><div class="value">${s.uniqueTechs}</div></div>
+        <div class="kpi"><div class="label">Avg Salary (CHF)</div><div class="value">${s.avgSalary ? s.avgSalary.toLocaleString() : 'N/A'}</div></div>
+    `;
+}
+
+function renderLists(stats) {
+    const esc = t => t.replace(/'/g, "\\'");
+    const total = stats.total;
+
+    const techData = new Map(stats.techs);
+    for (const [t] of techFilters) if (!techData.has(t)) techData.set(t, 0);
+    const techSlice = [...techData.entries()]
+        .sort((a, b) => {
+            const am = techFilters.has(a[0]) ? 1 : 0, bm = techFilters.has(b[0]) ? 1 : 0;
+            if (am !== bm) return bm - am;
+            return b[1] - a[1];
+        }).slice(0, 50);
+
+    document.getElementById('techList').innerHTML = techSlice.map(([name, count]) => {
+        const pct = total ? Math.round(count / total * 100) : 0;
+        const mode = techFilters.get(name) || '';
+        const cls = mode === 'include' ? 'included' : mode === 'exclude' ? 'excluded' : '';
+        const showPct = mode ? '' : `${pct}%`;
+        const actions = mode === 'exclude'
+            ? `<button class="btn-include" title="Include" onclick="excludeTech('${esc(name)}',event)">${PLUS_SVG}</button>
+               <button class="btn-remove" title="Remove" onclick="removeTech('${esc(name)}',event)">${X_SVG}</button>`
+            : `<button class="btn-exclude" title="Exclude" onclick="excludeTech('${esc(name)}',event)">${BAN_SVG}</button>
+               <button class="btn-remove" title="Remove" onclick="removeTech('${esc(name)}',event)">${X_SVG}</button>`;
+        return `<li class="${cls}" onclick="toggleTech('${esc(name)}')">
+            <span class="bar" style="width:${pct}%"></span>
+            <span class="name">${name}</span>
+            <span class="count">${showPct}</span>
+            <span class="actions">${actions}</span>
+        </li>`;
+    }).join('');
+
+    const perkData = new Map(stats.perks);
+    for (const [p] of perkFilters) if (!perkData.has(p)) perkData.set(p, 0);
+    const perkSlice = [...perkData.entries()]
+        .sort((a, b) => {
+            const am = perkFilters.has(a[0]) ? 1 : 0, bm = perkFilters.has(b[0]) ? 1 : 0;
+            if (am !== bm) return bm - am;
+            return b[1] - a[1];
+        }).slice(0, 50);
+
+    document.getElementById('perkList').innerHTML = perkSlice.map(([key, count]) => {
+        const pct = total ? Math.round(count / total * 100) : 0;
+        const label = PERK_LABELS[key] || key;
+        const mode = perkFilters.get(key) || '';
+        const cls = mode === 'include' ? 'included' : mode === 'exclude' ? 'excluded' : '';
+        const showPct = mode ? '' : `${pct}%`;
+        const actions = mode === 'exclude'
+            ? `<button class="btn-include" title="Include" onclick="excludePerk('${esc(key)}',event)">${PLUS_SVG}</button>
+               <button class="btn-remove" title="Remove" onclick="removePerk('${esc(key)}',event)">${X_SVG}</button>`
+            : `<button class="btn-exclude" title="Exclude" onclick="excludePerk('${esc(key)}',event)">${BAN_SVG}</button>
+               <button class="btn-remove" title="Remove" onclick="removePerk('${esc(key)}',event)">${X_SVG}</button>`;
+        return `<li class="${cls}" onclick="togglePerk('${esc(key)}')">
+            <span class="bar" style="width:${pct}%"></span>
+            <span class="name">${label}</span>
+            <span class="count">${showPct}</span>
+            <span class="actions">${actions}</span>
+        </li>`;
+    }).join('');
+}
+
+function renderJobs(jobs, total) {
+    const includedTechs = new Set([...techFilters.entries()].filter(([,m]) => m==='include').map(([t]) => t));
+    document.getElementById('jobCount').textContent = `(${jobs.length})`;
+    document.getElementById('jobList').innerHTML = jobs
+        .sort((a, b) => (b.activeFrom || '').localeCompare(a.activeFrom || ''))
+        .map(j => {
+            const salary = j.annualSalaryFrom && j.annualSalaryTo
+                ? `CHF ${(j.annualSalaryFrom/1000).toFixed(0)}k – ${(j.annualSalaryTo/1000).toFixed(0)}k`
+                : '';
+            const techs = (j.technologies || []).slice(0, 12).map(t =>
+                `<span class="tag${includedTechs.has(t) ? ' matched' : ''}">${t}</span>`
+            ).join('');
+            const url = `https://swissdevjobs.ch/jobs/${j.jobUrl || ''}`;
+            return `<li>
+                <div class="job-info">
+                    <div class="job-title"><a href="${url}" target="_blank">${j.name || ''}</a></div>
+                    <div class="job-meta">
+                        <span>${j.company || ''}</span>
+                        <span>· ${j.actualCity || '?'}</span>
+                        <span>· ${j.expLevel || ''}</span>
+                        <span>· ${j.workplace || ''}</span>
+                    </div>
+                    <div class="job-techs">${techs}</div>
+                </div>
+                ${salary ? `<div class="job-salary">${salary}</div>` : ''}
+            </li>`;
+        }).join('');
+}
+
+function buildFilters(jobs) {
+    const sets = { city: new Set(), exp: new Set(), meta: new Set(), workplace: new Set() };
+    for (const j of jobs) {
+        if (j.cityCategory) sets.city.add(j.cityCategory);
+        if (j.expLevel) sets.exp.add(j.expLevel);
+        if (j.metaCategory) sets.meta.add(j.metaCategory);
+        if (j.workplace) sets.workplace.add(j.workplace);
+    }
+    const container = document.getElementById('filters');
+    container.innerHTML = '<label>Filters:</label>';
+    const defs = [
+        { key: 'city', label: 'City', opts: [...sets.city].sort() },
+        { key: 'exp', label: 'Experience', opts: [...sets.exp].sort() },
+        { key: 'meta', label: 'Category', opts: [...sets.meta].sort() },
+        { key: 'workplace', label: 'Workplace', opts: [...sets.workplace].sort() },
+    ];
+    for (const d of defs) {
+        const sel = document.createElement('select');
+        sel.innerHTML = `<option value="">All ${d.label}s</option>` +
+            d.opts.map(o => `<option value="${o}">${o}</option>`).join('');
+        sel.addEventListener('change', () => { currentFilters[d.key] = sel.value; refresh(); });
+        container.appendChild(sel);
+    }
+}
+
+async function init() {
+    const resp = await fetch('https://swissdevjobs.ch/api/jobsLight');
+    allJobs = await resp.json();
+    buildFilters(allJobs);
+    refresh();
+}
+
+init();
+</script>
+</body>
+</html>
