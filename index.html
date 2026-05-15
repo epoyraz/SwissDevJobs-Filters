@@ -1,43 +1,114 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SwissDevJobs - Filters</title>
     <style>
+        :root, [data-theme="light"] {
+            --bg: #f8fafc;
+            --text: #1e293b;
+            --text-secondary: #64748b;
+            --text-muted: #334155;
+            --surface: #fff;
+            --border: #e2e8f0;
+            --border-light: #f1f5f9;
+            --accent: #0284c7;
+            --accent-gradient-from: #0284c7;
+            --accent-gradient-to: #6366f1;
+            --accent-hover: rgba(2,132,199,0.06);
+            --accent-selected: rgba(2,132,199,0.1);
+            --accent-bar: rgba(2,132,199,0.1);
+            --accent-bar-selected: rgba(2,132,199,0.18);
+            --red: #dc2626;
+            --red-bg: rgba(220,38,38,0.08);
+            --red-bar: rgba(239,68,68,0.08);
+            --green: #16a34a;
+            --tag-bg: #e2e8f0;
+            --tag-text: #334155;
+            --tag-matched-bg: rgba(2,132,199,0.15);
+            --select-bg: #fff;
+            --btn-hover-bg: #e2e8f0;
+            --scrollbar-track: #f1f5f9;
+            --scrollbar-thumb: #94a3b8;
+            --scrollbar-thumb-hover: #64748b;
+        }
+        [data-theme="dark"] {
+            --bg: #0f172a;
+            --text: #e2e8f0;
+            --text-secondary: #94a3b8;
+            --text-muted: #cbd5e1;
+            --surface: #1e293b;
+            --border: #334155;
+            --border-light: #1e293b;
+            --accent: #38bdf8;
+            --accent-gradient-from: #38bdf8;
+            --accent-gradient-to: #818cf8;
+            --accent-hover: rgba(56,189,248,0.08);
+            --accent-selected: rgba(56,189,248,0.12);
+            --accent-bar: rgba(56,189,248,0.12);
+            --accent-bar-selected: rgba(56,189,248,0.25);
+            --red: #f87171;
+            --red-bg: rgba(220,38,38,0.25);
+            --red-bar: rgba(239,68,68,0.12);
+            --green: #4ade80;
+            --tag-bg: #334155;
+            --tag-text: #cbd5e1;
+            --tag-matched-bg: rgba(56,189,248,0.2);
+            --select-bg: #0f172a;
+            --btn-hover-bg: #334155;
+            --scrollbar-track: #0f172a;
+            --scrollbar-thumb: #475569;
+            --scrollbar-thumb-hover: #64748b;
+        }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f8fafc;
-            color: #1e293b;
+            background: var(--bg);
+            color: var(--text);
             min-height: 100vh;
+            transition: background 0.2s, color 0.2s;
         }
         header {
-            background: #fff;
-            border-bottom: 1px solid #e2e8f0;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
             padding: 1.5rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
         header h1 {
             font-size: 1.8rem;
-            background: linear-gradient(135deg, #0284c7, #6366f1);
+            background: linear-gradient(135deg, var(--accent-gradient-from), var(--accent-gradient-to));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-        header p { color: #64748b; margin-top: 0.25rem; }
+        header p { color: var(--text-secondary); margin-top: 0.25rem; }
+        .theme-toggle {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.4rem 0.7rem;
+            cursor: pointer;
+            font-size: 1.2rem;
+            line-height: 1;
+            transition: background 0.2s;
+        }
+        .theme-toggle:hover { background: var(--border); }
         .filters {
             display: flex;
             gap: 0.75rem;
             padding: 1rem 2rem;
-            background: #fff;
-            border-bottom: 1px solid #e2e8f0;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
             flex-wrap: wrap;
             align-items: center;
         }
-        .filters label { color: #64748b; font-size: 0.85rem; font-weight: 600; }
+        .filters label { color: var(--text-secondary); font-size: 0.85rem; font-weight: 600; }
         .filters select {
-            background: #fff;
-            color: #1e293b;
-            border: 1px solid #cbd5e1;
+            background: var(--select-bg);
+            color: var(--text);
+            border: 1px solid var(--border);
             border-radius: 6px;
             padding: 0.4rem 0.6rem;
             font-size: 0.85rem;
@@ -49,13 +120,13 @@
             padding: 1.5rem 2rem;
         }
         .kpi {
-            background: #fff;
-            border: 1px solid #e2e8f0;
+            background: var(--surface);
+            border: 1px solid var(--border);
             border-radius: 10px;
             padding: 1.25rem;
         }
-        .kpi .label { color: #64748b; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; }
-        .kpi .value { font-size: 2rem; font-weight: 700; color: #0284c7; margin-top: 0.25rem; }
+        .kpi .label { color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; }
+        .kpi .value { font-size: 2rem; font-weight: 700; color: var(--accent); margin-top: 0.25rem; }
         .layout {
             display: grid;
             grid-template-columns: 340px 1fr;
@@ -65,56 +136,56 @@
         @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } }
         .sidebar { display: flex; flex-direction: column; gap: 1rem; }
         .card {
-            background: #fff;
-            border: 1px solid #e2e8f0;
+            background: var(--surface);
+            border: 1px solid var(--border);
             border-radius: 10px;
             padding: 1.25rem;
         }
         .card h2 {
             font-size: 1rem;
-            color: #64748b;
+            color: var(--text-secondary);
             margin-bottom: 1rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
         }
         .skill-list { list-style: none; max-height: 400px; overflow-y: auto; }
         .skill-list::-webkit-scrollbar { width: 6px; }
-        .skill-list::-webkit-scrollbar-track { background: #f1f5f9; }
-        .skill-list::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 3px; }
-        .skill-list::-webkit-scrollbar-thumb:hover { background: #64748b; }
+        .skill-list::-webkit-scrollbar-track { background: var(--scrollbar-track); }
+        .skill-list::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 3px; }
+        .skill-list::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-thumb-hover); }
         .skill-list li {
             position: relative;
             display: flex;
             align-items: center;
             justify-content: space-between;
             padding: 0.45rem 0.75rem;
-            border-bottom: 1px solid #f1f5f9;
+            border-bottom: 1px solid var(--border-light);
             cursor: pointer;
             overflow: hidden;
             transition: background 0.15s;
         }
-        .skill-list li:hover { background: rgba(2,132,199,0.06); }
-        .skill-list li.included { background: rgba(2,132,199,0.1); }
-        .skill-list li.excluded { background: rgba(220,38,38,0.08); border-left: 3px solid #ef4444; }
+        .skill-list li:hover { background: var(--accent-hover); }
+        .skill-list li.included { background: var(--accent-selected); }
+        .skill-list li.excluded { background: var(--red-bg); border-left: 3px solid #ef4444; }
         .skill-list li .bar {
             position: absolute;
             right: 0; top: 0; bottom: 0;
-            background: rgba(2,132,199,0.1);
+            background: var(--accent-bar);
             border-radius: 4px 0 0 4px;
             transition: width 0.4s ease;
             pointer-events: none;
         }
-        .skill-list li.included .bar { background: rgba(2,132,199,0.18); }
-        .skill-list li.excluded .bar { background: rgba(239,68,68,0.08); }
-        .skill-list li .name { position: relative; z-index: 1; color: #334155; font-size: 0.85rem; }
-        .skill-list li.included .name { color: #0284c7; font-weight: 600; }
-        .skill-list li.excluded .name { color: #dc2626; font-weight: 600; text-decoration: line-through; }
+        .skill-list li.included .bar { background: var(--accent-bar-selected); }
+        .skill-list li.excluded .bar { background: var(--red-bar); }
+        .skill-list li .name { position: relative; z-index: 1; color: var(--text-muted); font-size: 0.85rem; }
+        .skill-list li.included .name { color: var(--accent); font-weight: 600; }
+        .skill-list li.excluded .name { color: var(--red); font-weight: 600; text-decoration: line-through; }
         .skill-list li .count {
             position: relative; z-index: 1;
-            color: #0284c7; font-size: 0.85rem; font-weight: 600;
+            color: var(--accent); font-size: 0.85rem; font-weight: 600;
             min-width: 35px; text-align: right;
         }
-        .skill-list li.excluded .count { color: #dc2626; }
+        .skill-list li.excluded .count { color: var(--red); }
         .skill-list li .actions {
             display: none;
             position: relative; z-index: 2;
@@ -127,15 +198,15 @@
             display: inline-flex; align-items: center; justify-content: center;
             width: 20px; height: 20px;
             border: none; border-radius: 4px;
-            background: transparent; color: #64748b;
+            background: transparent; color: var(--text-secondary);
             cursor: pointer; padding: 0;
             transition: background 0.15s, color 0.15s;
         }
-        .skill-list li .actions button:hover { background: #e2e8f0; }
-        .skill-list li .actions .btn-exclude:hover { color: #dc2626; }
-        .skill-list li .actions .btn-include:hover { color: #16a34a; }
-        .skill-list li .actions .btn-remove:hover { color: #dc2626; }
-        .skill-list li.excluded .actions .btn-exclude { color: #dc2626; }
+        .skill-list li .actions button:hover { background: var(--btn-hover-bg); }
+        .skill-list li .actions .btn-exclude:hover { color: var(--red); }
+        .skill-list li .actions .btn-include:hover { color: var(--green); }
+        .skill-list li .actions .btn-remove:hover { color: var(--red); }
+        .skill-list li.excluded .actions .btn-exclude { color: var(--red); }
         .skill-list li .actions svg { width: 14px; height: 14px; }
         .job-list { list-style: none; }
         .job-list li {
@@ -143,37 +214,40 @@
             align-items: flex-start;
             gap: 1rem;
             padding: 1rem;
-            border-bottom: 1px solid #f1f5f9;
+            border-bottom: 1px solid var(--border-light);
             transition: background 0.15s;
         }
-        .job-list li:hover { background: rgba(2,132,199,0.04); }
+        .job-list li:hover { background: var(--accent-hover); }
         .job-info { flex: 1; min-width: 0; }
-        .job-title { font-size: 0.95rem; font-weight: 600; color: #1e293b; }
-        .job-title a { color: #0284c7; text-decoration: none; }
+        .job-title { font-size: 0.95rem; font-weight: 600; color: var(--text); }
+        .job-title a { color: var(--accent); text-decoration: none; }
         .job-title a:hover { text-decoration: underline; }
         .job-meta {
             display: flex; flex-wrap: wrap; gap: 0.5rem;
-            margin-top: 0.3rem; font-size: 0.8rem; color: #64748b;
+            margin-top: 0.3rem; font-size: 0.8rem; color: var(--text-secondary);
         }
         .job-meta span { display: inline-flex; align-items: center; gap: 0.2rem; }
         .job-techs { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.4rem; }
         .job-techs .tag {
-            background: #e2e8f0; color: #334155;
+            background: var(--tag-bg); color: var(--tag-text);
             border-radius: 4px; padding: 0.15rem 0.4rem; font-size: 0.75rem;
         }
-        .job-techs .tag.matched { background: rgba(2,132,199,0.15); color: #0284c7; font-weight: 600; }
+        .job-techs .tag.matched { background: var(--tag-matched-bg); color: var(--accent); font-weight: 600; }
         .job-salary {
             flex-shrink: 0; text-align: right;
-            font-size: 0.85rem; color: #16a34a; font-weight: 600; white-space: nowrap;
+            font-size: 0.85rem; color: var(--green); font-weight: 600; white-space: nowrap;
         }
-        .job-count { color: #64748b; font-size: 0.85rem; padding: 0.5rem 0; }
-        .loading { text-align: center; padding: 3rem; color: #64748b; font-size: 1.1rem; }
+        .job-count { color: var(--text-secondary); font-size: 0.85rem; padding: 0.5rem 0; }
+        .loading { text-align: center; padding: 3rem; color: var(--text-secondary); font-size: 1.1rem; }
     </style>
 </head>
 <body>
     <header>
-        <h1>SwissDevJobs - Filters</h1>
-        <p>Live analysis of tech job skills demand across Switzerland</p>
+        <div>
+            <h1>SwissDevJobs - Filters</h1>
+            <p>Live analysis of tech job skills demand across Switzerland</p>
+        </div>
+        <button class="theme-toggle" onclick="toggleTheme()" title="Toggle dark/light mode" id="themeBtn">🌙</button>
     </header>
     <div class="filters" id="filters"></div>
     <div class="kpi-row" id="kpis"><div class="loading">Loading jobs from swissdevjobs.ch...</div></div>
@@ -185,6 +259,21 @@
         <div class="card"><h2>Jobs <span id="jobCount" class="job-count"></span></h2><ul class="job-list" id="jobList"></ul></div>
     </div>
 <script>
+function toggleTheme() {
+    const html = document.documentElement;
+    const next = html.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+    html.setAttribute('data-theme', next);
+    document.getElementById('themeBtn').textContent = next === 'light' ? '🌙' : '☀️';
+    localStorage.setItem('theme', next);
+}
+(function() {
+    const saved = localStorage.getItem('theme');
+    if (saved) {
+        document.documentElement.setAttribute('data-theme', saved);
+        document.getElementById('themeBtn').textContent = saved === 'light' ? '🌙' : '☀️';
+    }
+})();
+
 let allJobs = [];
 let currentFilters = {};
 let techFilters = new Map();
