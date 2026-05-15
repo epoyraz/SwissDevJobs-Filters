@@ -1,0 +1,20 @@
+index.html
+  s_731df5a735b002::t_216068a0e009fe 175
+  s_731df5a735b002::t_2676fa7485efb7 6,11-12,16-17,22,26,31-32,36,38-40,52-53,57-58,68-69,75,82-83,91,96-98,102,107-111,114,117,130,134-138,146,149,151-152,156,161,164,167,170
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "4e407218700f3e384a302fe31d72b5136786c7a6",
+  "prompts": {},
+  "sessions": {
+    "s_731df5a735b002": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fee5af2d-11c8-4a49-b784-b4732131da21",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "Enes Poyraz <epoyraz.eth@googlemail.com>"
+    }
+  }
+}
